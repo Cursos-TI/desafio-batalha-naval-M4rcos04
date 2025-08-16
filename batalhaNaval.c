@@ -1,102 +1,83 @@
 #include <stdio.h>
-#include <stdbool.h>
 
-#define ROWS 10
-#define COLS 10
-#define SHIP_SIZE 3
-#define WATER 0
-#define SHIP 3
+#define TAMANHO 10
+#define AGUA 0
+#define NAVIO 3
 
-typedef enum { HORIZONTAL, VERTICAL } Orientation;
+// Função para exibir o tabuleiro
+void exibirTabuleiro(int tabuleiro[TAMANHO][TAMANHO]) {
+    int i, j;
 
-/* Inicializa o tabuleiro com água (0) */
-void initBoard(int board[ROWS][COLS]) {
-    int r, c;
-    for (r = 0; r < ROWS; r++) {
-        for (c = 0; c < COLS; c++) {
-            board[r][c] = WATER;
-        }
-    }
-}
-
-/* Imprime o tabuleiro */
-void printBoard(int board[ROWS][COLS]) {
-    int r, c;
+    // Cabeçalho com os números das colunas
     printf("   ");
-    for (c = 0; c < COLS; c++) {
-        printf("%2d ", c);
+    for (j = 0; j < TAMANHO; j++) {
+        printf("%2d ", j);
     }
     printf("\n");
-    for (r = 0; r < ROWS; r++) {
-        printf("%2d ", r);
-        for (c = 0; c < COLS; c++) {
-            printf("%2d ", board[r][c]);
+
+    // Exibe o tabuleiro com os números das linhas
+    for (i = 0; i < TAMANHO; i++) {
+        printf("%2d ", i);
+        for (j = 0; j < TAMANHO; j++) {
+            printf("%2d ", tabuleiro[i][j]);
         }
         printf("\n");
     }
 }
 
-/* Verifica se é possível posicionar o navio */
-bool canPlaceShip(int board[ROWS][COLS], int startRow, int startCol, Orientation o) {
-    int i;
-    if (o == HORIZONTAL) {
-        if (startCol < 0 || startCol + SHIP_SIZE - 1 >= COLS || startRow < 0 || startRow >= ROWS)
-            return false;
-        for (i = 0; i < SHIP_SIZE; i++) {
-            if (board[startRow][startCol + i] != WATER) return false;
-        }
-    } else { // vertical
-        if (startRow < 0 || startRow + SHIP_SIZE - 1 >= ROWS || startCol < 0 || startCol >= COLS)
-            return false;
-        for (i = 0; i < SHIP_SIZE; i++) {
-            if (board[startRow + i][startCol] != WATER) return false;
+// Função para inicializar o tabuleiro com água (0)
+void inicializarTabuleiro(int tabuleiro[TAMANHO][TAMANHO]) {
+    int i, j;
+    for (i = 0; i < TAMANHO; i++) {
+        for (j = 0; j < TAMANHO; j++) {
+            tabuleiro[i][j] = AGUA;
         }
     }
-    return true;
 }
 
-/* Posiciona o navio no tabuleiro */
-bool placeShip(int board[ROWS][COLS], const int shipVec[SHIP_SIZE],
-               int startRow, int startCol, Orientation o) {
+// Função para posicionar um navio no tabuleiro
+// tipo: 0 para horizontal, 1 para vertical, 2 para diagonal (crescente), 3 para diagonal (decrescente)
+// tamanho: tamanho do navio
+void posicionarNavio(int tabuleiro[TAMANHO][TAMANHO], int linhaInicial, int colunaInicial, int tipo, int tamanho) {
     int i;
-    if (!canPlaceShip(board, startRow, startCol, o)) return false;
-
-    if (o == HORIZONTAL) {
-        for (i = 0; i < SHIP_SIZE; i++) {
-            board[startRow][startCol + i] = shipVec[i];
-        }
-    } else {
-        for (i = 0; i < SHIP_SIZE; i++) {
-            board[startRow + i][startCol] = shipVec[i];
+    for (i = 0; i < tamanho; i++) {
+        if (tipo == 0) { // Horizontal
+            tabuleiro[linhaInicial][colunaInicial + i] = NAVIO;
+        } else if (tipo == 1) { // Vertical
+            tabuleiro[linhaInicial + i][colunaInicial] = NAVIO;
+        } else if (tipo == 2) { // Diagonal (crescente: i+1, j+1)
+            tabuleiro[linhaInicial + i][colunaInicial + i] = NAVIO;
+        } else if (tipo == 3) { // Diagonal (decrescente: i+1, j-1)
+            tabuleiro[linhaInicial + i][colunaInicial - i] = NAVIO;
         }
     }
-    return true;
 }
 
-/* Programa principal */
-int main(void) {
-    int board[ROWS][COLS];
-    int shipHorizontal[SHIP_SIZE] = { SHIP, SHIP, SHIP };
-    int shipVertical[SHIP_SIZE]   = { SHIP, SHIP, SHIP };
+int main() {
+    int tabuleiro[TAMANHO][TAMANHO];
 
-    int hRow = 2, hCol = 4; // início do navio horizontal
-    int vRow = 6, vCol = 1; // início do navio vertical
+    // 1. Inicializa o tabuleiro com água
+    inicializarTabuleiro(tabuleiro);
 
-    initBoard(board);
+    // 2. Posiciona os quatro navios
 
-    if (!placeShip(board, shipHorizontal, hRow, hCol, HORIZONTAL)) {
-        printf("Erro: nao foi possivel posicionar o navio horizontal.\n");
-        return 1;
-    }
+    // Navios horizontais/verticais
+    // Navio vertical de tamanho 4
+    posicionarNavio(tabuleiro, 2, 2, 1, 4);
 
-    if (!placeShip(board, shipVertical, vRow, vCol, VERTICAL)) {
-        printf("Erro: nao foi possivel posicionar o navio vertical.\n");
-        return 1;
-    }
+    // Navio horizontal de tamanho 3
+    posicionarNavio(tabuleiro, 5, 5, 0, 3);
 
-    printBoard(board);
+    // Navios diagonais
+    // Navio diagonal crescente de tamanho 3
+    posicionarNavio(tabuleiro, 1, 6, 2, 3);
 
-    printf("\nPressione ENTER para sair...");
-    getchar(); // mantém a janela aberta até apertar ENTER
+    // Navio diagonal decrescente de tamanho 4
+    posicionarNavio(tabuleiro, 0, 9, 3, 4);
+
+    // 3. Exibe o tabuleiro completo
+    printf("Tabuleiro de Batalha Naval 10x10\n\n");
+    exibirTabuleiro(tabuleiro);
+
     return 0;
 }
