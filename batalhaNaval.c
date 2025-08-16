@@ -1,40 +1,102 @@
 #include <stdio.h>
+#include <stdbool.h>
 
-// Desafio Batalha Naval - MateCheck
-// Este código inicial serve como base para o desenvolvimento do sistema de Batalha Naval.
-// Siga os comentários para implementar cada parte do desafio.
+#define ROWS 10
+#define COLS 10
+#define SHIP_SIZE 3
+#define WATER 0
+#define SHIP 3
 
-int main() {
-    // Nível Novato - Posicionamento dos Navios
-    // Sugestão: Declare uma matriz bidimensional para representar o tabuleiro (Ex: int tabuleiro[5][5];).
-    // Sugestão: Posicione dois navios no tabuleiro, um verticalmente e outro horizontalmente.
-    // Sugestão: Utilize `printf` para exibir as coordenadas de cada parte dos navios.
+typedef enum { HORIZONTAL, VERTICAL } Orientation;
 
-    // Nível Aventureiro - Expansão do Tabuleiro e Posicionamento Diagonal
-    // Sugestão: Expanda o tabuleiro para uma matriz 10x10.
-    // Sugestão: Posicione quatro navios no tabuleiro, incluindo dois na diagonal.
-    // Sugestão: Exiba o tabuleiro completo no console, mostrando 0 para posições vazias e 3 para posições ocupadas.
+/* Inicializa o tabuleiro com água (0) */
+void initBoard(int board[ROWS][COLS]) {
+    int r, c;
+    for (r = 0; r < ROWS; r++) {
+        for (c = 0; c < COLS; c++) {
+            board[r][c] = WATER;
+        }
+    }
+}
 
-    // Nível Mestre - Habilidades Especiais com Matrizes
-    // Sugestão: Crie matrizes para representar habilidades especiais como cone, cruz, e octaedro.
-    // Sugestão: Utilize estruturas de repetição aninhadas para preencher as áreas afetadas por essas habilidades no tabuleiro.
-    // Sugestão: Exiba o tabuleiro com as áreas afetadas, utilizando 0 para áreas não afetadas e 1 para áreas atingidas.
+/* Imprime o tabuleiro */
+void printBoard(int board[ROWS][COLS]) {
+    int r, c;
+    printf("   ");
+    for (c = 0; c < COLS; c++) {
+        printf("%2d ", c);
+    }
+    printf("\n");
+    for (r = 0; r < ROWS; r++) {
+        printf("%2d ", r);
+        for (c = 0; c < COLS; c++) {
+            printf("%2d ", board[r][c]);
+        }
+        printf("\n");
+    }
+}
 
-    // Exemplos de exibição das habilidades:
-    // Exemplo para habilidade em cone:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 1 1 1 1 1
-    
-    // Exemplo para habilidade em octaedro:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 0 0 1 0 0
+/* Verifica se é possível posicionar o navio */
+bool canPlaceShip(int board[ROWS][COLS], int startRow, int startCol, Orientation o) {
+    int i;
+    if (o == HORIZONTAL) {
+        if (startCol < 0 || startCol + SHIP_SIZE - 1 >= COLS || startRow < 0 || startRow >= ROWS)
+            return false;
+        for (i = 0; i < SHIP_SIZE; i++) {
+            if (board[startRow][startCol + i] != WATER) return false;
+        }
+    } else { // vertical
+        if (startRow < 0 || startRow + SHIP_SIZE - 1 >= ROWS || startCol < 0 || startCol >= COLS)
+            return false;
+        for (i = 0; i < SHIP_SIZE; i++) {
+            if (board[startRow + i][startCol] != WATER) return false;
+        }
+    }
+    return true;
+}
 
-    // Exemplo para habilidade em cruz:
-    // 0 0 1 0 0
-    // 1 1 1 1 1
-    // 0 0 1 0 0
+/* Posiciona o navio no tabuleiro */
+bool placeShip(int board[ROWS][COLS], const int shipVec[SHIP_SIZE],
+               int startRow, int startCol, Orientation o) {
+    int i;
+    if (!canPlaceShip(board, startRow, startCol, o)) return false;
 
+    if (o == HORIZONTAL) {
+        for (i = 0; i < SHIP_SIZE; i++) {
+            board[startRow][startCol + i] = shipVec[i];
+        }
+    } else {
+        for (i = 0; i < SHIP_SIZE; i++) {
+            board[startRow + i][startCol] = shipVec[i];
+        }
+    }
+    return true;
+}
+
+/* Programa principal */
+int main(void) {
+    int board[ROWS][COLS];
+    int shipHorizontal[SHIP_SIZE] = { SHIP, SHIP, SHIP };
+    int shipVertical[SHIP_SIZE]   = { SHIP, SHIP, SHIP };
+
+    int hRow = 2, hCol = 4; // início do navio horizontal
+    int vRow = 6, vCol = 1; // início do navio vertical
+
+    initBoard(board);
+
+    if (!placeShip(board, shipHorizontal, hRow, hCol, HORIZONTAL)) {
+        printf("Erro: nao foi possivel posicionar o navio horizontal.\n");
+        return 1;
+    }
+
+    if (!placeShip(board, shipVertical, vRow, vCol, VERTICAL)) {
+        printf("Erro: nao foi possivel posicionar o navio vertical.\n");
+        return 1;
+    }
+
+    printBoard(board);
+
+    printf("\nPressione ENTER para sair...");
+    getchar(); // mantém a janela aberta até apertar ENTER
     return 0;
 }
